@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            border: 1px solid black;
+        }
+
+        td,
+        th {
+            border: 1px solid black;
+        }
+
+        .richtig {
+            background-color: lightgreen;
+        }
+
+        .falsch {
+            background-color: lightcoral;
+        }
+
+        .container {
+            position: fixed;
+            top: 100px;
+            right: 100px;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        body{
+            /* font-family: fantasy; */
+            font-size: large;
+        }
+    </style>
+
+    <script>
+        document.results = [
+            { erg: "Richtig", total: 0, shade: "lightgreen" },
+            { erg: "falsch", total: 0, shade: "lightcoral" },
+            { erg: "leer", total: 50, shade: "lightgrey" }
+        ];
+        function getRandomInt(max) {
+            return Math.floor(Math.random() * max);
+        }
+        function erstelleAufgabe() {
+            var erg = 0;
+
+
+            var op = getRandomInt(4);
+
+            if (op == 0) {
+                var a = getRandomInt(101);
+                var b = getRandomInt(101);
+                erg = a + b;
+                document.op = "+";
+
+            } else if (op == 1) {
+                var a = getRandomInt(101);
+                var b = getRandomInt(101);
+                if (b > a) {
+                    [a, b] = [b, a];
+                }
+                erg = a - b;
+                document.op = "-";
+            } else if (op == 2) {
+                var a = getRandomInt(11);
+                var b = getRandomInt(11);
+                erg = a * b;
+                document.op = "&#183;";
+            } else if (op == 3) {
+                var a = getRandomInt(10) + 1;
+                var b = getRandomInt(10) + 1;
+                if (b > a) {
+                    [a, b] = [b, a];
+                }
+                a = a * b;
+                erg = a / b;
+                document.op = ":";
+            }
+            document.erg = erg;
+            document.a = a;
+            document.b = b;
+            document.getElementById("a").innerHTML = a;
+            document.getElementById("b").innerHTML = b;
+            document.getElementById("op").innerHTML = document.op;
+            /* document.getElementById("erg").focus(); */
+            document.getElementById("erg").value = "";
+        }
+        function eingabe(e) {
+            var aktTr = e.parentNode.parentNode;
+            const tr = document.createElement("tr");
+            const td1 = document.createElement("td");
+            const td2 = document.createElement("td");
+            const td3 = document.createElement("td");
+            td1.innerHTML = document.a + " " + document.op + " " + document.b;
+            if (document.erg == document.getElementById("erg").value) {
+                td2.innerHTML = document.erg;
+                td3.innerHTML = "&#9989;"
+                tr.className = "richtig";
+                document.results[0].total++;
+                new Audio("sound/correct.mp3").play();
+            } else {
+                td2.innerHTML = document.erg + " - Du hast " + document.getElementById("erg").value + " eingegeben.";
+                td3.innerHTML = "&#10060;"
+                tr.className = "falsch";
+                document.results[1].total++;
+                new Audio("sound/spongebob-fail.mp3").play();
+            }
+            document.results[2].total--;
+            document.getElementById("fertig").value++;
+            tr.appendChild(td1);
+            tr.appendChild(td2);
+            tr.appendChild(td3);
+            
+            aktTr.parentNode.insertBefore(tr, aktTr);
+            erstelleAufgabe();
+            let ctx = document.querySelector("canvas").getContext("2d");
+            
+            
+            
+            let sum = 0;
+            let gesamtAufgaben = document.results.reduce((sum, { total }) => sum + total, 0);
+            let currentAngle = 0;
+            let i =0;
+            ctx.clearRect(0,0,300,300);
+            for (let aufgabe of document.results) {
+                //calculating the angle the slice (portion) will take in the chart
+                let portionAngle = (aufgabe.total / gesamtAufgaben) * 2 * Math.PI;
+                //drawing an arc and a line to the center to differentiate the slice from the rest
+                ctx.beginPath();
+                ctx.arc(100, 100, 100, currentAngle, currentAngle + portionAngle);
+                currentAngle += portionAngle;
+                ctx.lineTo(100, 100);
+                //filling the slices with the corresponding mood's color
+                ctx.fillStyle = aufgabe.shade;
+                ctx.fill();
+                ctx.font = '48px serif';
+                ctx.fillText(aufgabe.total,i*175,200);
+                ctx.strokeText(aufgabe.total,i*175,200);
+                i++;
+            }
+            if (document.getElementById("fertig").value == document.getElementById("fertig").max){
+                var heute = new Date();
+                ctx.fillStyle="yellow";
+                ctx.fillText(heute.toLocaleDateString(),0,250);
+                ctx.strokeText(heute.toLocaleDateString(),0,250);
+                ctx.font = '30px serif';
+                ctx.strokeText("schick mir das Ergebnis",0,280);
+                document.getElementById("canvas").toBlob(blob => navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]))
+                document.getElementById("erg").parentNode.parentNode.remove();
+            }
+        }
+    </script>
+</head>
+
+<body>
+    <h1>Rechentrainer von Papa</h1>
+    <table id="rechentabelle">
+        <tr>
+            <th>Aufgabe</th>
+            <th>Ergebnis</th>
+            <th>Richtig/Falsch</th>
+        </tr>
+        <tr id="eingabeZeile">
+            <td>
+                <span id="a"></span>
+                <span id="op"></span>
+                <span id="b"></span>
+            </td>
+            <td>
+                <input type="number" id="erg" oninput="" focus>
+            </td>
+            <td>
+
+            </td>
+        </tr>
+    </table>
+    <label for="fertig">Fertig:</label>
+    <progress id="fertig" value="0" max="50"></progress>
+
+
+    <div class="container">
+        <canvas id="canvas" width="300" height="300"></canvas>
+    </div>
+
+    <script>
+        erstelleAufgabe();
+        document.getElementById("erg").addEventListener("keypress", function (event) {
+            // If the user presses the "Enter" key on the keyboard
+            if (event.key === "Enter") {
+                // Cancel the default action, if needed
+                event.preventDefault();
+                // Trigger the button element with a click
+                eingabe(this);
+            }
+        });
+
+        document.getElementById("erg").focus();
+    </script>
+</body>
+
+</html>
