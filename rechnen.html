@@ -23,6 +23,7 @@
 
         .falsch {
             background-color: lightcoral;
+            
         }
 
         .container {
@@ -42,15 +43,19 @@
     </style>
 
     <script>
+        document.startzeit = Date.now();
         if (getCookie("anz") == null){
             document.maxAufgaben = 25;
         } else {
             document.maxAufgaben = getCookie("anz");
         }
         document.results = [
-            { erg: "Richtig", total: 0, shade: "lightgreen" },
-            { erg: "falsch", total: 0, shade: "lightcoral" },
-            { erg: "leer", total: document.maxAufgaben, shade: "lightgrey" }
+            { erg: "Richtig", total: 0, shade: "lightgreen",op:"OK" },
+            { erg: "Falsch+", total: 0, shade: "maroon",op:"PLUS" },
+            { erg: "Falsch-", total: 0, shade: "red",op:"MINUS" },
+            { erg: "Falsch*", total: 0, shade: "purple",op:"MAL" },
+            { erg: "Falsch/", total: 0, shade: "fuchsia",op:"GETEILT" },
+            { erg: "leer", total: document.maxAufgaben, shade: "lightgrey",op:"TODO" }
         ];
         function getRandomInt(max) {
             return Math.floor(Math.random() * max);
@@ -116,10 +121,18 @@
                 td2.innerHTML = document.erg + " - Du hast " + document.getElementById("erg").value + " eingegeben.";
                 td3.innerHTML = "&#10060;"
                 tr.className = "falsch";
-                document.results[1].total++;
+                if (document.op == "+"){
+                    document.results[1].total++;
+                } else if (document.op == "-"){
+                    document.results[2].total++;
+                }else if (document.op == "&#183;"){
+                    document.results[3].total++;
+                }else if (document.op == ":"){
+                    document.results[4].total++;
+                }
                 new Audio("sound/spongebob-fail.mp3").play();
             }
-            document.results[2].total--;
+            document.results[5].total--;
             document.getElementById("fertig").value++;
             tr.appendChild(td1);
             tr.appendChild(td2);
@@ -147,18 +160,37 @@
                 //filling the slices with the corresponding mood's color
                 ctx.fillStyle = aufgabe.shade;
                 ctx.fill();
-                ctx.font = '48px serif';
-                ctx.fillText(aufgabe.total, i * 175, 200);
-                ctx.strokeText(aufgabe.total, i * 175, 200);
+                ctx.font = '15px serif';
+                //ctx.fillText(aufgabe.total, i * 175, 200);
+                //ctx.strokeText(aufgabe.total, i * 175, 200);
+                ctx.fillStyle = aufgabe.shade;
+                ctx.fillText(`${aufgabe.op}: ${aufgabe.total}`, 210, 20+i*20);
                 i++;
             }
             if (document.getElementById("fertig").value == document.getElementById("fertig").max) {
+                const end = Date.now();
+                var h=0;
+                var m =0;
+                var s =Math.floor((end - document.startzeit)/1000);
+                if (s > 60){
+                    m = Math.floor(s/60);
+                    s %=60;
+                }
+                if (m>60){
+                    h = Math.floor(m/60);
+                    m%=60;
+                }
+
+                var dauer =`Dauer ${h}:${m}:${s}`;
                 var heute = new Date();
+                
                 ctx.fillStyle = "yellow";
                 ctx.fillText(heute.toLocaleDateString(), 0, 250);
                 ctx.strokeText(heute.toLocaleDateString(), 0, 250);
+                ctx.font = '15px serif';
+                ctx.strokeText(dauer, 0, 270);
                 ctx.font = '30px serif';
-                ctx.strokeText("schick mir das Ergebnis", 0, 280);
+                ctx.strokeText("schick mir das Ergebnis", 0, 295);
                 document.getElementById("canvas").toBlob(blob => navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]))
                 document.getElementById("erg").parentNode.parentNode.remove();
                 var ma = parseInt(document.maxAufgaben)
