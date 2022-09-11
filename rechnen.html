@@ -41,10 +41,11 @@
     </style>
 
     <script>
+        document.maxAufgaben = 25;
         document.results = [
             { erg: "Richtig", total: 0, shade: "lightgreen" },
             { erg: "falsch", total: 0, shade: "lightcoral" },
-            { erg: "leer", total: 50, shade: "lightgrey" }
+            { erg: "leer", total: document.maxAufgaben, shade: "lightgrey" }
         ];
         function getRandomInt(max) {
             return Math.floor(Math.random() * max);
@@ -183,7 +184,7 @@
         </tr>
     </table>
     <label for="fertig">Fertig:</label>
-    <progress id="fertig" value="0" max="50"></progress>
+    <progress id="fertig" value="0" max="1"></progress>
 
 
     <div class="container">
@@ -201,8 +202,9 @@
                 eingabe(this);
             }
         });
-
+        document.getElementById("fertig").max = document.maxAufgaben;
         document.getElementById("erg").focus();
+
     </script>
 </body>
 
