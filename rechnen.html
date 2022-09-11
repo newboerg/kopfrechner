@@ -161,7 +161,8 @@
                 ctx.strokeText("schick mir das Ergebnis", 0, 280);
                 document.getElementById("canvas").toBlob(blob => navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]))
                 document.getElementById("erg").parentNode.parentNode.remove();
-                setCookie("anz",document.maxAufgaben +1, 90);
+                var ma = parseInt(document.maxAufgaben)
+                setCookie("anz",ma +1, 90);
             }
         }
 
