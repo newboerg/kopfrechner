@@ -34,14 +34,19 @@
             justify-content: center;
             align-items: center;
         }
-        body{
+
+        body {
             /* font-family: fantasy; */
             font-size: large;
         }
     </style>
 
     <script>
-        document.maxAufgaben = 25;
+        if (getCookie("anz") == null){
+            document.maxAufgaben = 5;
+        } else {
+            document.maxAufgaben = getCookie("anz");
+        }
         document.results = [
             { erg: "Richtig", total: 0, shade: "lightgreen" },
             { erg: "falsch", total: 0, shade: "lightcoral" },
@@ -119,18 +124,18 @@
             tr.appendChild(td1);
             tr.appendChild(td2);
             tr.appendChild(td3);
-            
+
             aktTr.parentNode.insertBefore(tr, aktTr);
             erstelleAufgabe();
             let ctx = document.querySelector("canvas").getContext("2d");
-            
-            
-            
+
+
+
             let sum = 0;
             let gesamtAufgaben = document.results.reduce((sum, { total }) => sum + total, 0);
             let currentAngle = 0;
-            let i =0;
-            ctx.clearRect(0,0,300,300);
+            let i = 0;
+            ctx.clearRect(0, 0, 300, 300);
             for (let aufgabe of document.results) {
                 //calculating the angle the slice (portion) will take in the chart
                 let portionAngle = (aufgabe.total / gesamtAufgaben) * 2 * Math.PI;
@@ -143,21 +148,33 @@
                 ctx.fillStyle = aufgabe.shade;
                 ctx.fill();
                 ctx.font = '48px serif';
-                ctx.fillText(aufgabe.total,i*175,200);
-                ctx.strokeText(aufgabe.total,i*175,200);
+                ctx.fillText(aufgabe.total, i * 175, 200);
+                ctx.strokeText(aufgabe.total, i * 175, 200);
                 i++;
             }
-            if (document.getElementById("fertig").value == document.getElementById("fertig").max){
+            if (document.getElementById("fertig").value == document.getElementById("fertig").max) {
                 var heute = new Date();
-                ctx.fillStyle="yellow";
-                ctx.fillText(heute.toLocaleDateString(),0,250);
-                ctx.strokeText(heute.toLocaleDateString(),0,250);
+                ctx.fillStyle = "yellow";
+                ctx.fillText(heute.toLocaleDateString(), 0, 250);
+                ctx.strokeText(heute.toLocaleDateString(), 0, 250);
                 ctx.font = '30px serif';
-                ctx.strokeText("schick mir das Ergebnis",0,280);
+                ctx.strokeText("schick mir das Ergebnis", 0, 280);
                 document.getElementById("canvas").toBlob(blob => navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]))
                 document.getElementById("erg").parentNode.parentNode.remove();
+                setCookie("anz",document.maxAufgaben +1, 90);
             }
         }
+
+        function getCookie(name) {
+            var v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+            return v ? v[2] : null;
+        }
+        function setCookie(name, value, days) {
+            var d = new Date;
+            d.setTime(d.getTime() + 24 * 60 * 60 * 1000 * days);
+            document.cookie = name + "=" + value + ";path=/;expires=" + d.toGMTString();
+        }
+        function deleteCookie(name) { setCookie(name, '', -1); }
     </script>
 </head>
 
